@@ -670,7 +670,12 @@ export default function Studio() {
             <div className="takes">
               <h2 className="pane-label">Generated conversations</h2>
               <ol>
-                {takes.map((take) => (
+                {[...takes].sort((a, b) => {
+                  const priority = (take) => take.id === "saved-box-original" ? 0
+                    : take.id === "saved-box-edited" ? 1
+                    : /unbox|hard[s]? tyr|hard[s]? tir/i.test(take.key || "") ? 3 : 2;
+                  return priority(a) - priority(b);
+                }).map((take) => (
                   <li key={take.id} className={`take ${take.id === selectedId ? "is-selected" : ""} ${take.id === fastestId && takes.length > 1 ? "is-fastest" : ""}`}>
                     <span className="take-pos">{take.recorded ? "R" : take.number}</span>
                     <button type="button" className="take-play" onClick={() => toggleTake(take)} aria-label={nowPlaying === take.id ? `Pause ${take.label}` : `Play ${take.label}`}>
