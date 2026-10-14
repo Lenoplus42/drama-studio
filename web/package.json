@@ -1,1 +1,15 @@
-{"private":true,"type":"module"}
+{
+  "name": "drama-studio-web",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start"
+  },
+  "dependencies": {
+    "next": "^15.5.7",
+    "react": "^19.2.3",
+    "react-dom": "^19.2.3"
+  }
+}
