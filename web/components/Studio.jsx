@@ -661,7 +661,7 @@ export default function Studio() {
             )}
           </div>
 
-          <p className={`status status-${status.tone}`} role="status" aria-live="polite">{status.text}</p>
+          {status.text && <p className={`status status-${status.tone}`} role="status" aria-live="polite">{status.text}</p>}
           {notice && (
             <p className={`notice notice-${notice.tone}`}>
               {notice.text}
@@ -780,7 +780,7 @@ function statusLine({ run, health, problems, apiUrl, selectedTake, editedSince }
   }
   if (problems.length) return { tone: "warn", text: problems[0] };
   if (editedSince) return { tone: "quiet", text: `${selectedTake.label} is from an earlier version of the script. Click Generate conversation to hear your edits.` };
-  if (selectedTake?.recorded) return { tone: "quiet", text: "This saved recording was generated earlier on a MacBook. Edit the script and generate a new take to hear your changes." };
+  if (selectedTake?.recorded) return { tone: "quiet", text: "" };
   if (health.status === "offline") return { tone: "error", text: `Can't reach the voice server at ${apiUrl}. Start it, or change the address in Server settings.` };
   if (health.status === "checking") return { tone: "quiet", text: "Looking for the voice server…" };
   return { tone: "quiet", text: "Ready. Click Generate conversation or press ⌘ Enter to generate and play audio." };
