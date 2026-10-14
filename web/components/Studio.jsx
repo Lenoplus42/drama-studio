@@ -63,7 +63,7 @@ function describeError(error, apiUrl) {
 /* ------------------------------------------------------------------ */
 
 export default function Studio() {
-  const [scene, setScene] = useState(() => sceneFromPreset(PRESETS[0]));
+  const [scene, setScene] = useState(() => sceneFromPreset(PRESETS.find((preset) => preset.id === "box-box")));
   const [apiUrl, setApiUrl] = useState(DEFAULT_API);
   const [health, setHealth] = useState({ status: "checking" });
   const [run, setRun] = useState({ phase: "idle" });
@@ -505,7 +505,7 @@ export default function Studio() {
         </div>
       </header>
 
-      <p className="inference-note">Web app hosted on Vercel. Voices generated on a MacBook with our custom C++/MLX inference implementation, integrated with SGLang-Omni.</p>
+      <p className="inference-note">Voices generated on a MacBook with our custom C++/MLX inference implementation, integrated with SGLang-Omni.</p>
 
       <main className="layout">
         <section className="script-pane" aria-label="Script">
@@ -644,6 +644,7 @@ export default function Studio() {
                 <PlayIcon /> Generate conversation
               </button>
             )}
+            <p className="generation-guidance">We recommend two short lines for live generation. Longer conversations may contain silence or stop early due to bugs in our inference code.</p>
             {nowPlaying === "stream" && !generating && (
               <button type="button" className="transport" onClick={stop}><StopIcon /> Stop playback</button>
             )}
