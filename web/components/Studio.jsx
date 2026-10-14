@@ -507,7 +507,7 @@ export default function Studio() {
 
       <section className="studio-intro" aria-label="About Drama Studio">
         <h1>Drama Studio — Your MacBook is the AI server.</h1>
-        <p>Run expressive AI conversations locally on a MacBook with 32 GB of unified memory. No cloud GPU required.</p>
+        <p>Run expressive AI conversations locally on a MacBook with 32 GB of unified memory. Turn a script into a conversation. Rewrite it. Hear the difference. Create dialogue for video edits, game characters, and audio stories.</p>
         <p className="intro-beta">This public demo connects to Lennox’s MacBook, which must stay online. When self-hosted, inference runs on your own Mac.</p>
       </section>
 
