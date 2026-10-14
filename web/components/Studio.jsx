@@ -505,6 +505,8 @@ export default function Studio() {
         </div>
       </header>
 
+      <p className="inference-note">Web app hosted on Vercel. Voices generated on a MacBook with our custom C++/MLX inference implementation, integrated with SGLang-Omni.</p>
+
       <main className="layout">
         <section className="script-pane" aria-label="Script">
           <div className="scene-head">
@@ -699,6 +701,7 @@ export default function Studio() {
               </ol>
             </div>
           )}
+          <p className="voice-demo-note">Try the voices generated right here on a MacBook. <span>Play a saved take above, or edit a script and generate your own.</span></p>
         </aside>
       </main>
 

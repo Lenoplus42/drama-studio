@@ -975,3 +975,7 @@ body { background: var(--mb-black); }
 
 .preset-select { display: flex; flex-direction: column; gap: 8px; }
 .preset-label { font-size: 14px; font-weight: 600; color: var(--mb-white, #f0f3f3); }
+
+.inference-note { margin: 0; padding: 12px 28px; color: #b7c2c6; font-size: 13px; line-height: 1.6; border-bottom: 1px solid #30363b; }
+.voice-demo-note { margin: 24px 0 0; text-align: right; color: #eef4f5; font-size: 15px; line-height: 1.6; }
+.voice-demo-note span { display: block; color: #a6b0b5; font-size: 13px; }
