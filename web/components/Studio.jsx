@@ -670,7 +670,16 @@ export default function Studio() {
 
           {takes.length > 0 && (
             <div className="takes">
-              <h2 className="pane-label">Generated conversations</h2>
+              <div className="takes-heading">
+                <h2 className="pane-label">Generated conversations</h2>
+                <div className="takes-invitation">
+                  <span>Try these voices</span>
+                  <small>Generated on a MacBook</small>
+                  <svg viewBox="0 0 220 64" aria-hidden="true">
+                    <path d="M205 8 C167 0 148 23 163 31 C183 43 196 12 174 14 C139 17 115 53 15 49 M29 38 L14 49 L29 59" />
+                  </svg>
+                </div>
+              </div>
               <ol>
                 {[...takes].sort((a, b) => {
                   const priority = (take) => take.id === "saved-box-original" ? 0
@@ -701,7 +710,6 @@ export default function Studio() {
               </ol>
             </div>
           )}
-          <p className="voice-demo-note">Try the voices generated right here on a MacBook. <span>Play a saved take above, or edit a script and generate your own.</span></p>
         </aside>
       </main>
 
