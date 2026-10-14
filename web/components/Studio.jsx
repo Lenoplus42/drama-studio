@@ -797,7 +797,7 @@ function ServerBadge({ health, backend, onClick }) {
   else if (health.status === "starting") { tone = "pending"; text = "Server starting"; }
   else if (health.status === "online") {
     if (backend === "mock") { tone = "mock"; text = "Mock server"; }
-    else { tone = "live"; text = "Live · Drama3 on MLX"; }
+    else { tone = "live"; text = "Live · Drama3 On Lennox's Macbook MLX"; }
     if (health.busy) text += " · busy";
   }
   return (
