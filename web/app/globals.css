@@ -971,3 +971,4 @@ body { background: var(--mb-black); }
 .ghost-button, .transport { background: transparent; }
 .take { background: transparent; border-bottom: 1px solid var(--mb-grey-dark); border-radius: 0; margin: 0; }
 .take.is-selected { background: rgba(0, 163, 221, 0.06); }
+:root { --role-2: var(--mb-white); }

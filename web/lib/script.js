@@ -2,7 +2,8 @@
 
 // The server currently accepts speaker 0 or 1 (server/app.py, Line.speaker).
 // Raise this together with the server's Literal if Drama3 handles more voices.
-export const MAX_CAST = 2;
+// NEXT_PUBLIC_DRAMA_MAX_VOICES=3 once the server accepts speaker 2.
+export const MAX_CAST = Math.min(4, Math.max(2, Number(process.env.NEXT_PUBLIC_DRAMA_MAX_VOICES) || 2));
 export const MAX_LINES = 12;
 export const MAX_CHARS = 300;
 
@@ -27,38 +28,34 @@ export const PRESETS = [
     note: "team radio, wet race",
     cast: ["Matteo", "Dave"],
     lines: () => [
-      line(0, "Dave. Dave, there is water in the car."),
-      line(1, "Copy, Matteo. It's a wet race. Water is expected."),
-      line(0, "No, in the car. It's at my knees now. Dave, it is at my knees!"),
-      line(1, "Copy, knees. Front-left temps look great, by the way."),
-      line(0, "I'm sitting in a bathtub at three hundred kilometres an hour!"),
-      line(1, "Noted. Can you go strat mode seven, please."),
-      line(0, "Dave. Dave, there is a fish. It is looking at me.", "whispers"),
-      line(1, "Copy, one fish. Is the fish affecting rear stability?"),
+      line(0, "Dave, there is water in the car."),
+      line(1, "Copy. It's a wet race, Matteo. Water is expected."),
+      line(0, "In the car, Dave! It's at my knees!"),
+      line(1, "Understood, we are checking. Front-left temps look great."),
+      line(0, "I don't care about the front-left! There is a fish in here!"),
+      line(1, "Copy, one fish. Is it affecting rear stability?"),
       line(0, "It is affecting my mental stability!"),
-      line(1, "Chequered flag. P4, Matteo. Also, the fish has asked about a seat for next year."),
-      line(0, "Is he faster than me?", "sighs"),
-      line(1, "We are checking."),
+      line(1, "Noted. You're losing two tenths in sector two. Any idea why?"),
+      line(0, "Must be the water, Dave.", "sighs"),
+      line(1, "Copy. Stay out. We'll look at the water after the race."),
     ],
   },
   {
     id: "hold-position",
     title: "Hold Position",
-    note: "teammates, team orders",
-    cast: ["Harrison", "Felix"],
+    note: "3 voices, team orders",
+    cast: ["Sam", "Felix", "Harrison"],
     lines: () => [
-      line(0, "Happy to be the responsible older brother today."),
-      line(1, "And I am the younger brother who is faster."),
-      line(0, "Ha. Lovely. He's very confident. That's great. Really great.", "laughs"),
+      line(0, "Okay boys, race clean today. Like a family."),
       line(1, "Sorry Harrison! The door was open!"),
-      line(0, "The door was my racing line."),
-      line(1, "Your car has the new front wing. It is very shiny. It looks wider."),
-      line(0, "It is the same width, Felix. It was measured."),
-      line(1, "Hold position? Which position?"),
-      line(0, "The one where you're behind me."),
-      line(1, "P1! Harrison, did you see? Thank you for the tow!", "laughs"),
-      line(0, "That was not a tow. That was a demonstration. And my cooldown lap is two tenths faster.", "sighs"),
-      line(1, "What! Then I will cool down faster."),
+      line(2, "That door was my racing line! Unbelievable!"),
+      line(0, "Copy. Felix, please leave Harrison a car's width."),
+      line(1, "His car or my car? His has the new front wing, it looks wider."),
+      line(2, "It is the same width! Sam, tell him it's the same width!"),
+      line(0, "Team orders, guys. Hold position."),
+      line(1, "Which position?"),
+      line(2, "The one where he's behind me!"),
+      line(0, "Next year I'm applying to a team with one car.", "sighs"),
     ],
   },
   {
@@ -117,6 +114,9 @@ export function validate(scene) {
   const problems = [];
   if (!scene.lines.length) problems.push("Add at least one line.");
   if (scene.lines.length > MAX_LINES) problems.push(`Keep the scene to ${MAX_LINES} lines or fewer.`);
+  if (scene.cast.length > MAX_CAST) {
+    problems.push(`This scene has ${scene.cast.length} voices, but the voice server takes ${MAX_CAST}. Enable speaker ${MAX_CAST} on the server and set NEXT_PUBLIC_DRAMA_MAX_VOICES=${scene.cast.length}.`);
+  }
   scene.lines.forEach((item, index) => {
     const text = item.text.trim();
     if (!text) problems.push(`Line ${index + 1} is empty.`);
