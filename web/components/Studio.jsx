@@ -463,7 +463,6 @@ export default function Studio() {
 
   return (
     <div className="studio">
-      <Backdrop />
       <header className="topbar">
         <div className="brand">
           <span className="wordmark">Drama Studio</span>
@@ -567,9 +566,10 @@ export default function Studio() {
           >
             <div className="cockpit">
               {scene.backdrop && <div className="set" style={{ backgroundImage: `url(${scene.backdrop})` }} aria-hidden="true" />}
-              <svg className="swoosh" viewBox="0 0 400 260" preserveAspectRatio="none" aria-hidden="true">
-                <path className="swoosh-a" d="M-10 266 C 170 262, 235 170, 288 96 S 372 16, 410 8" />
-                <path className="swoosh-b" d="M-10 266 C 170 262, 235 170, 288 96 S 372 16, 410 8" />
+              <svg className="stage-art" viewBox="0 0 400 260" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+                {[40, 140, 240, 340, 440].map((a, i) => (
+                  <polygon key={a} points={`${a},-20 ${a + 46},-20 ${a - 74},130 ${a + 46},280 ${a},280 ${a - 120},130`} className={i % 2 ? "band-b" : "band-a"} />
+                ))}
               </svg>
               <div className="start-lights" aria-hidden="true">
                 {[0, 1, 2, 3, 4].map((i) => (
@@ -1026,26 +1026,5 @@ function WriteDialog({ onClose, onWritten }) {
         </div>
       </form>
     </dialog>
-  );
-}
-
-/** Fixed livery backdrop: muted chevron bands and shards over a carbon-fibre weave. */
-function Backdrop() {
-  const chevron = (a) => `${a},-120 ${a + 150},-120 ${a - 250},450 ${a + 150},1020 ${a},1020 ${a - 400},450`;
-  return (
-    <svg className="backdrop-livery" viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
-      {[260, 620, 980, 1340, 1700].map((a, i) => (
-        <polygon key={a} points={chevron(a)} fill={i % 2 ? "var(--band-2)" : "var(--band-1)"} />
-      ))}
-      <g className="shards">
-        <polygon points="0,96 236,0 330,0 0,214" fill="var(--shard-1)" />
-        <polygon points="0,236 372,0 396,0 0,262" fill="var(--shard-3)" />
-        <polygon points="720,900 1440,330 1440,372 772,900" fill="var(--shard-3)" />
-        <polygon points="830,900 1440,420 1440,600 1010,900" fill="var(--shard-1)" />
-        <polygon points="1060,900 1440,640 1440,760 1210,900" fill="var(--shard-2)" />
-        <polygon points="1236,0 1318,0 1440,128 1440,214" fill="var(--shard-2)" />
-        <polygon points="1340,0 1366,0 1440,62 1440,88" fill="var(--shard-3)" />
-      </g>
-    </svg>
   );
 }

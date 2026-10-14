@@ -22,6 +22,46 @@ const line = (role, text, emotion = "neutral") => ({ id: newId(), role, text, em
 
 export const PRESETS = [
   {
+    id: "water-works",
+    title: "Water Works",
+    note: "team radio, wet race",
+    cast: ["Matteo", "Dave"],
+    lines: () => [
+      line(0, "Dave. Dave, there is water in the car."),
+      line(1, "Copy, Matteo. It's a wet race. Water is expected."),
+      line(0, "No, in the car. It's at my knees now. Dave, it is at my knees!"),
+      line(1, "Copy, knees. Front-left temps look great, by the way."),
+      line(0, "I'm sitting in a bathtub at three hundred kilometres an hour!"),
+      line(1, "Noted. Can you go strat mode seven, please."),
+      line(0, "Dave. Dave, there is a fish. It is looking at me.", "whispers"),
+      line(1, "Copy, one fish. Is the fish affecting rear stability?"),
+      line(0, "It is affecting my mental stability!"),
+      line(1, "Chequered flag. P4, Matteo. Also, the fish has asked about a seat for next year."),
+      line(0, "Is he faster than me?", "sighs"),
+      line(1, "We are checking."),
+    ],
+  },
+  {
+    id: "hold-position",
+    title: "Hold Position",
+    note: "teammates, team orders",
+    cast: ["Harrison", "Felix"],
+    lines: () => [
+      line(0, "Happy to be the responsible older brother today."),
+      line(1, "And I am the younger brother who is faster."),
+      line(0, "Ha. Lovely. He's very confident. That's great. Really great.", "laughs"),
+      line(1, "Sorry Harrison! The door was open!"),
+      line(0, "The door was my racing line."),
+      line(1, "Your car has the new front wing. It is very shiny. It looks wider."),
+      line(0, "It is the same width, Felix. It was measured."),
+      line(1, "Hold position? Which position?"),
+      line(0, "The one where you're behind me."),
+      line(1, "P1! Harrison, did you see? Thank you for the tow!", "laughs"),
+      line(0, "That was not a tow. That was a demonstration. And my cooldown lap is two tenths faster.", "sighs"),
+      line(1, "What! Then I will cool down faster."),
+    ],
+  },
+  {
     id: "box-box",
     title: "Box this lap",
     note: "team radio",
@@ -96,9 +136,9 @@ export function toRequestLines(scene) {
 }
 
 const EMOTION_WORDS = {
-  laughs: ["laughs", "laughing", "laugh", "笑", "大笑", "笑着"],
+  laughs: ["laughs", "laughing", "laugh", "tight laugh", "chuckles", "笑", "大笑", "笑着"],
   whispers: ["whispers", "whispering", "whisper", "低语", "小声", "耳语"],
-  sighs: ["sighs", "sighing", "sigh", "叹气", "叹息"],
+  sighs: ["sighs", "sighing", "sigh", "long pause", "叹气", "叹息"],
 };
 
 function emotionFrom(word) {
@@ -131,6 +171,7 @@ export function parseScript(raw) {
       if (found) emotion = found;
       body = body.slice(direction[0].length).trim();
     }
+    body = body.replace(/\s*[(（](beat|pause|long pause)[)）]\s*/gi, " ").trim();
     if (!body) continue;
     let role = names.indexOf(name);
     if (role < 0) {
