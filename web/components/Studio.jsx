@@ -250,7 +250,7 @@ export default function Studio() {
       cast: live.snapshot.cast.map((c) => c.name), lineCount: lines.length,
     };
     live.takeId = take.id;
-    setTakes((previous) => [take, ...previous].slice(0, 12));
+    setTakes((previous) => [...previous, take]);
     setSelectedId(take.id);
     setRun({ phase: "done", backend: live.backend, takeId: take.id, renderMs, firstAudioMs: live.firstAudioMs, duration: live.received, truncated: live.truncated });
   }, [apiUrl, ensureAudio, scene, stopStreamPlayback]);
@@ -308,7 +308,7 @@ export default function Studio() {
         peaks: peakEnvelope(samples, Math.round(sampleRate / PEAK_RATE)),
         key: "recorded", cast: [], lineCount: 0,
       };
-      setTakes((previous) => [take, ...previous.filter((t) => !t.recorded)]);
+      setTakes((previous) => [...previous, take]);
       setRun({ phase: "idle" });
       playTake(take);
     } catch {
@@ -517,7 +517,7 @@ export default function Studio() {
             />
             <div className="scene-tools">
               <label className="preset-select">
-                <span className="visually-hidden">Load a sample scene</span>
+                <span className="preset-label">Choose a script</span>
                 <select value={scene.presetId || ""} onChange={(e) => loadPreset(e.target.value)}>
                   <option value="" disabled>Sample scenes…</option>
                   {PRESETS.map((preset) => (
@@ -673,7 +673,7 @@ export default function Studio() {
                 {[...takes].sort((a, b) => {
                   const priority = (take) => take.id === "saved-box-original" ? 0
                     : take.id === "saved-box-edited" ? 1
-                    : /unbox|hard[s]? tyr|hard[s]? tir/i.test(take.key || "") ? 3 : 2;
+                    : 2;
                   return priority(a) - priority(b);
                 }).map((take) => (
                   <li key={take.id} className={`take ${take.id === selectedId ? "is-selected" : ""} ${take.id === fastestId && takes.length > 1 ? "is-fastest" : ""}`}>

@@ -972,3 +972,6 @@ body { background: var(--mb-black); }
 .take { background: transparent; border-bottom: 1px solid var(--mb-grey-dark); border-radius: 0; margin: 0; }
 .take.is-selected { background: rgba(0, 163, 221, 0.06); }
 :root { --role-2: var(--mb-white); }
+
+.preset-select { display: flex; flex-direction: column; gap: 8px; }
+.preset-label { font-size: 14px; font-weight: 600; color: var(--mb-white, #f0f3f3); }
