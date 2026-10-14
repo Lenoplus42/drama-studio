@@ -506,9 +506,9 @@ export default function Studio() {
       </header>
 
       <section className="studio-intro" aria-label="About Drama Studio">
-        <h1>Turn a script into a conversation. Rewrite it. Hear the difference.</h1>
-        <p>Voices run locally on Lennox’s MacBook using our custom C++/MLX inference implementation integrated with SGLang-Omni.</p>
-        <p className="intro-beta"><strong>Beta:</strong> Generated voices may contain long silences due to an inference issue. We plan to fix this before opening a PR for SGLang-Omni.</p>
+        <h1>Drama Studio — Your MacBook is the AI server.</h1>
+        <p>Run expressive AI conversations locally on a MacBook with 32 GB of unified memory. No cloud GPU required.</p>
+        <p className="intro-beta">This public demo connects to Lennox’s MacBook, which must stay online. When self-hosted, inference runs on your own Mac.</p>
       </section>
 
       <main className="layout">
