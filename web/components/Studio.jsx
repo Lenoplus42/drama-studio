@@ -509,6 +509,7 @@ export default function Studio() {
 
       <main className="layout">
         <section className="script-pane" aria-label="Script">
+          <p className="generation-guidance">We recommend two short lines for live generation. Longer conversations may contain silence or stop early due to bugs in our inference code.</p>
           <div className="scene-head">
             <input
               className="scene-title"
@@ -644,7 +645,6 @@ export default function Studio() {
                 <PlayIcon /> Generate conversation
               </button>
             )}
-            <p className="generation-guidance">We recommend two short lines for live generation. Longer conversations may contain silence or stop early due to bugs in our inference code.</p>
             {nowPlaying === "stream" && !generating && (
               <button type="button" className="transport" onClick={stop}><StopIcon /> Stop playback</button>
             )}
