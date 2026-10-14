@@ -9,6 +9,7 @@ export const MAX_CHARS = 300;
 
 export const EMOTIONS = [
   { id: "neutral", label: "Neutral", direction: "" },
+  { id: "anxious", label: "Anxious", direction: "anxious" },
   { id: "laughs", label: "Laughs", direction: "laughing" },
   { id: "whispers", label: "Whispers", direction: "whispering" },
   { id: "sighs", label: "Sighs", direction: "sighing" },
@@ -23,39 +24,23 @@ const line = (role, text, emotion = "neutral") => ({ id: newId(), role, text, em
 
 export const PRESETS = [
   {
-    id: "water-works",
-    title: "Water Works",
-    note: "team radio, wet race",
-    cast: ["Matteo", "Dave"],
+    id: "short-secret",
+    title: "The Secret",
+    note: "2 lines, short demo",
+    cast: ["Alice", "Bob"],
     lines: () => [
-      line(0, "Dave, there is water in the car."),
-      line(1, "Copy. It's a wet race, Matteo. Water is expected."),
-      line(0, "In the car, Dave! It's at my knees!"),
-      line(1, "Understood, we are checking. Front-left temps look great."),
-      line(0, "I don't care about the front-left! There is a fish in here!"),
-      line(1, "Copy, one fish. Is it affecting rear stability?"),
-      line(0, "It is affecting my mental stability!"),
-      line(1, "Noted. You're losing two tenths in sector two. Any idea why?"),
-      line(0, "Must be the water, Dave.", "sighs"),
-      line(1, "Copy. Stay out. We'll look at the water after the race."),
+      line(0, "Did you tell him our secret?"),
+      line(1, "He knew before we even met."),
     ],
   },
   {
-    id: "hold-position",
-    title: "Hold Position",
-    note: "3 voices, team orders",
-    cast: ["Sam", "Felix", "Harrison"],
+    id: "short-heist",
+    title: "The Heist",
+    note: "2 lines, short demo",
+    cast: ["Alex", "Sam"],
     lines: () => [
-      line(0, "Okay boys, race clean today. Like a family."),
-      line(1, "Sorry Harrison! The door was open!"),
-      line(2, "That door was my racing line! Unbelievable!"),
-      line(0, "Copy. Felix, please leave Harrison a car's width."),
-      line(1, "His car or my car? His has the new front wing, it looks wider."),
-      line(2, "It is the same width! Sam, tell him it's the same width!"),
-      line(0, "Team orders, guys. Hold position."),
-      line(1, "Which position?"),
-      line(2, "The one where he's behind me!"),
-      line(0, "Next year I'm applying to a team with one car.", "sighs"),
+      line(0, "Please tell me you got it."),
+      line(1, "Yes, but we should leave now."),
     ],
   },
   {
@@ -65,37 +50,11 @@ export const PRESETS = [
     cast: ["Engineer", "Driver"],
     lines: () => [
       line(0, "Box this lap, box this lap. We're switching to softs."),
-      line(1, "Softs? The rear tyres are already on fire.", "sighs"),
+      line(1, "Softs? The rear tyres are already on fire."),
       line(0, "Trust the strategy. Gap to the car behind is two point one."),
-      line(1, "You said that last race, and we finished in the gravel.", "laughs"),
-      line(0, "Then don't brake in the gravel this time.", "whispers"),
+      line(1, "You said that last race, and we finished in the gravel."),
+      line(0, "Then don't brake in the gravel this time."),
       line(1, "Copy. Pushing now."),
-    ],
-  },
-  {
-    id: "curtain-en",
-    title: "Ten minutes to curtain",
-    note: "backstage drama",
-    cast: ["Mara", "Jonah"],
-    lines: () => [
-      line(0, "Wait, you rewrote the whole show? We go on in ten minutes."),
-      line(1, "Relax, I only changed the ending. This time we don't have to pretend to say goodbye.", "laughs"),
-      line(0, "But will the audience believe it?", "whispers"),
-      line(1, "Just look at me and say the last line."),
-      line(0, "Okay. Starting tonight, we go home together."),
-    ],
-  },
-  {
-    id: "shop-en",
-    title: "The last potion",
-    note: "game NPC banter",
-    cast: ["Shopkeeper", "Traveler"],
-    lines: () => [
-      line(1, "I need a healing potion. The strong kind."),
-      line(0, "Strong kind, he says. Everyone wants the strong kind after the dragon wakes up.", "sighs"),
-      line(1, "So you have one?"),
-      line(0, "One. Last bottle. And it costs more than your sword.", "laughs"),
-      line(1, "Then I guess I'm fighting the dragon with a very nice sword.", "sighs"),
     ],
   },
 ];
@@ -136,6 +95,7 @@ export function toRequestLines(scene) {
 }
 
 const EMOTION_WORDS = {
+  anxious: ["anxious", "焦急"],
   laughs: ["laughs", "laughing", "laugh", "tight laugh", "chuckles", "笑", "大笑", "笑着"],
   whispers: ["whispers", "whispering", "whisper", "低语", "小声", "耳语"],
   sighs: ["sighs", "sighing", "sigh", "long pause", "叹气", "叹息"],

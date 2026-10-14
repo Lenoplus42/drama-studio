@@ -9,19 +9,38 @@ from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import Literal
 
+import httpx
+
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 ROOT = Path(__file__).resolve().parents[1]
+HEARTBEAT_INTERVAL_SECONDS = 10
+
+BOX_DEMO_TEXT = "\n".join([
+    "<|speaker:0|> Box this lap, box this lap. We're switching to softs.",
+    "<|speaker:1|> Softs? The rear tyres are already on fire.",
+    "<|speaker:0|> Trust the strategy. Gap to the car behind is two point one.",
+    "<|speaker:1|> You said that last race, and we finished in the gravel.",
+    "<|speaker:0|> Then don't brake in the gravel this time.",
+    "<|speaker:1|> Copy. Pushing now.",
+])
+BOX_DEMO_SEED = 6009981471313978998
+
+DEMO_SEEDS = {
+    BOX_DEMO_TEXT: BOX_DEMO_SEED,
+    "<|speaker:0|> Please tell me you got it.\n<|speaker:1|> Yes, but we should leave now.": 2895390944680674525,
+    "<|speaker:0|> Did you tell him our secret?\n<|speaker:1|> He knew before we even met.": 126013838323777362,
+}
 
 
 class Line(BaseModel):
     model_config = ConfigDict(extra="forbid")
     speaker: Literal[0, 1]
     text: str = Field(min_length=1, max_length=300)
-    emotion: Literal["neutral", "laughs", "whispers", "sighs"] = "neutral"
+    emotion: Literal["neutral", "anxious", "laughs", "whispers", "sighs"] = "neutral"
 
     @field_validator("text")
     @classmethod
@@ -38,7 +57,7 @@ class Scene(BaseModel):
 
 
 def render_scene(scene: Scene) -> str:
-    return " ".join(
+    return "\n".join(
         f"<|speaker:{line.speaker}|> "
         + (f"[{line.emotion}] " if line.emotion != "neutral" else "")
         + line.text for line in scene.lines
@@ -57,15 +76,18 @@ def wav_bytes(pcm: bytes, rate: int) -> bytes:
 
 class Backend:
     def __init__(self, mode: str):
-        self.mode = mode
+        self.mode = "mlx" if mode == "omni" else mode
+        self.omni_url = os.getenv("DRAMA_OMNI_URL", "http://127.0.0.1:8093") if mode == "omni" else None
         self.model = None
         self.rate = 44100
         if mode == "mlx":
+            import mlx.core as mx
             from mlx_audio.tts.utils import load_model
+            mx.random.seed(42)
             self.model = load_model(os.environ["DRAMA_MODEL_PATH"])
             self.rate = self.model.sample_rate
-        elif mode != "mock":
-            raise ValueError("DRAMA_BACKEND must be mock or mlx")
+        elif mode not in ("mock", "omni"):
+            raise ValueError("DRAMA_BACKEND must be mock, mlx or omni")
 
     def generate(self, scene: Scene):
         if self.mode == "mock":
@@ -73,16 +95,47 @@ class Backend:
                 while pcm := sample.readframes(14112):
                     yield pcm, False
             return
+        import mlx.core as mx
         import numpy as np
+        seed = os.getenv("DRAMA_SEED")
+        if seed is not None:
+            mx.random.seed(int(seed))
         segment_frames = {}
         for result in self.model.generate(
-            text=render_scene(scene), stream=True, first_chunk_frames=4, max_tokens=768
+            text=render_scene(scene), stream=True, first_chunk_frames=4, max_tokens=512
         ):
             segment = result.segment_idx
             segment_frames[segment] = segment_frames.get(segment, 0) + result.token_count
             audio = np.asarray(result.audio)
             pcm = (np.clip(audio, -1, 1) * 32767).astype("<i2").tobytes()
-            yield pcm, any(count >= 768 for count in segment_frames.values())
+            yield pcm, any(count >= 512 for count in segment_frames.values())
+
+
+async def audio_chunks(backend: Backend, scene: Scene):
+    if backend.omni_url:
+        text = render_scene(scene)
+        request = {"model": "drama3-native-mlx", "input": text,
+                   "response_format": "wav", "max_new_tokens": 512}
+        if text in DEMO_SEEDS:
+            request["seed"] = DEMO_SEEDS[text]
+        async with httpx.AsyncClient(timeout=httpx.Timeout(600, connect=10)) as client:
+            response = await client.post(
+                f"{backend.omni_url}/v1/audio/speech", json=request,
+            )
+            response.raise_for_status()
+            capped = response.headers["X-Finish-Reason"] == "length"
+            with wave.open(io.BytesIO(response.content), "rb") as audio:
+                if (audio.getnchannels(), audio.getsampwidth(), audio.getframerate()) != (1, 2, backend.rate):
+                    raise ValueError("Omni returned an unsupported WAV format")
+                yield audio.readframes(audio.getnframes()), capped
+        return
+    loop = asyncio.get_running_loop()
+    iterator = backend.generate(scene)
+    try:
+        while (chunk := await loop.run_in_executor(app.state.pool, next_chunk, iterator)) is not None:
+            yield chunk
+    finally:
+        await asyncio.shield(loop.run_in_executor(app.state.pool, iterator.close))
 
 
 def next_chunk(iterator):
@@ -124,18 +177,28 @@ async def generate(scene: Scene):
         raise HTTPException(status_code=409, detail="A scene is already generating")
     app.state.busy = True
     backend = app.state.backend
-    iterator = backend.generate(scene)
+    chunks = audio_chunks(backend, scene)
 
     async def stream():
-        loop = asyncio.get_running_loop()
         count = 0
         samples = 0
         truncated = False
+        pending = None
         try:
             yield event({"type": "start", "version": 1, "backend": backend.mode,
                          "sample_rate": backend.rate, "channels": 1, "format": "wav-pcm16"})
-            while (chunk := await loop.run_in_executor(app.state.pool, next_chunk, iterator)) is not None:
-                pcm, capped = chunk
+            while True:
+                pending = asyncio.create_task(anext(chunks))
+                while not pending.done():
+                    done, _ = await asyncio.wait({pending}, timeout=HEARTBEAT_INTERVAL_SECONDS)
+                    if not done:
+                        yield event({"type": "heartbeat"})
+                try:
+                    pcm, capped = pending.result()
+                except StopAsyncIteration:
+                    pending = None
+                    break
+                pending = None
                 truncated |= capped
                 if not pcm:
                     continue
@@ -153,9 +216,12 @@ async def generate(scene: Scene):
             logging.exception("Scene generation failed")
             yield event({"type": "error", "message": "Generation failed; inspect server logs"})
         finally:
-            cleanup = loop.run_in_executor(app.state.pool, iterator.close)
+            if pending is not None:
+                pending.cancel()
+                await asyncio.gather(pending, return_exceptions=True)
+            cleanup = asyncio.create_task(chunks.aclose())
             cleanup.add_done_callback(lambda future: setattr(app.state, "busy", False))
             await asyncio.shield(cleanup)
 
     return StreamingResponse(stream(), media_type="application/x-ndjson",
-                             headers={"Cache-Control": "no-store"})
+                             headers={"Cache-Control": "no-store, no-transform", "X-Accel-Buffering": "no"})

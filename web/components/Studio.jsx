@@ -68,6 +68,28 @@ export default function Studio() {
   const [health, setHealth] = useState({ status: "checking" });
   const [run, setRun] = useState({ phase: "idle" });
   const [takes, setTakes] = useState([]);
+  useEffect(() => {
+    let cancelled = false;
+    const saved = [
+      { id: "saved-box-original", label: "Box this lap — original", url: "/samples/box-original.wav" },
+      { id: "saved-box-edited", label: "Box this lap — edited gap", url: "/samples/box-edited.wav" },
+    ];
+    Promise.all(saved.map(async (item) => {
+      const response = await fetch(item.url);
+      if (!response.ok) throw new Error("Saved audio unavailable");
+      const bytes = new Uint8Array(await response.arrayBuffer());
+      const { samples, sampleRate } = parseWav(bytes);
+      return { ...item, number: 0, recorded: true, backend: "recorded",
+        duration: samples.length / sampleRate,
+        peaks: peakEnvelope(samples, Math.round(sampleRate / PEAK_RATE)),
+        key: item.id, cast: [], lineCount: 6 };
+    })).then((savedTakes) => {
+      if (cancelled) return;
+      setTakes((previous) => [...previous, ...savedTakes.filter((item) => !previous.some((take) => take.id === item.id))]);
+      setSelectedId((current) => current || savedTakes[0].id);
+    }).catch(() => {});
+    return () => { cancelled = true; };
+  }, []);
   const [selectedId, setSelectedId] = useState(null);
   const [nowPlaying, setNowPlaying] = useState(null); // "stream" | take id | null
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -506,9 +528,6 @@ export default function Studio() {
               <button type="button" className="ghost-button" onClick={() => setPasteOpen(true)}>
                 <PasteIcon /> Paste script
               </button>
-              <button type="button" className="ghost-button is-accent" onClick={() => setWriteOpen(true)}>
-                <QuillIcon /> Write with AI
-              </button>
             </div>
           </div>
 
@@ -658,7 +677,7 @@ export default function Studio() {
                       {nowPlaying === take.id ? <PauseIcon /> : <PlayIcon />}
                     </button>
                     <button type="button" className="take-main" onClick={() => setSelectedId(take.id)}>
-                      <span className="take-time">{fmtLap(take.duration)}</span>
+                      <span className="take-time">{take.recorded ? `${take.label} · ` : ""}{fmtLap(take.duration)}</span>
                       <span className="take-meta">
                         {take.firstAudioMs != null ? `first audio ${fmtLatency(take.firstAudioMs)}` : "recorded earlier on Drama3"}
                         {take.key === currentKey && !take.recorded ? " · current script" : ""}
@@ -907,10 +926,13 @@ function PasteDialog({ initial, onClose, onImport }) {
         <h2>Paste a script</h2>
         <p className="fine-print">
           One line per row as <code>Name: what they say</code>. Add a stage direction after the colon to set the delivery:
-          <code>(laughs)</code> <code>(whispers)</code> <code>(sighs)</code>.
+          <code>(anxious)</code> <code>(laughs)</code> <code>(whispers)</code> <code>(sighs)</code>.
           The first {MAX_CAST} names become the cast; up to {MAX_LINES} lines.
         </p>
-        <textarea value={text} onChange={(e) => { setText(e.target.value); setError(null); }} rows={10} spellCheck={false} autoFocus />
+        <p className="fine-print">Try two short lines first. Copy this format, then edit the dialogue:</p>
+        <pre style={{ whiteSpace: "pre-wrap" }}>{"Alex: Please tell me you got it.\nSam: Yes, but we should leave now."}</pre>
+        <button type="button" className="ghost-button" onClick={() => { setText("Alex: Please tell me you got it.\nSam: Yes, but we should leave now."); setError(null); }}>Use example</button>
+        <textarea aria-label="Script text" value={text} onChange={(e) => { setText(e.target.value); setError(null); }} rows={10} spellCheck={false} autoFocus />
         {error && <p className="notice notice-error">{error}</p>}
         <div className="settings-actions">
           <button type="button" className="ghost-button" onClick={onClose}>Cancel</button>

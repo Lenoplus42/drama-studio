@@ -26,7 +26,7 @@ Title: <a short title>
 Rules:
 - Exactly two named characters, alternating naturally. 5 to 8 lines in total.
 - Each line is something a person says out loud, under 120 characters. No narration, no actions, no sound effects, no emoji.
-- A line may start with one direction, only from: (laughs) (whispers) (sighs). Use them where they fit the moment, at most three in the scene. Leave neutral lines without a direction.
+- A line may start with one direction, only from: (anxious) (laughs) (whispers) (sighs). Use them where they fit the moment, at most three in the scene. Leave neutral lines without a direction.
 - Give the scene a small turn or punchline at the end.
 - Write the title, names and lines in ${language === "zh" ? "Simplified Chinese (names in Chinese too; keep the directions in English)" : "English"}.`;
 

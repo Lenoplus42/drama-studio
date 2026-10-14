@@ -4,7 +4,7 @@ const url = process.argv[2] ?? 'http://127.0.0.1:8765';
 const health = await (await fetch(`${url}/health`)).json();
 assert.equal(health.ready, true);
 let chunks = 0, seconds = 0, ended = false;
-for await (const event of generateScene(url, [{speaker: 0, text: '你好，我们的接口已经连通了。'}])) {
+for await (const event of generateScene(url, [{speaker: 0, text: 'Hello. Our voice studio is ready.'}])) {
   if (event.type === 'start') {
     assert.equal(event.version, 1);
     assert.equal(event.backend, health.backend);
