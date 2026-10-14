@@ -23,9 +23,37 @@ const line = (role, text, emotion = "neutral") => ({ id: newId(), role, text, em
 
 export const PRESETS = [
   {
+    id: "water-works-short",
+    title: "Water Works",
+    note: "6-line cut",
+    cast: ["Matteo", "Dave"],
+    lines: () => [
+      line(0, "Dave, there's water in the car."),
+      line(1, "Copy. It's a wet race."),
+      line(0, "It's at my knees! There's a fish!"),
+      line(1, "Copy, one fish. You're two tenths slower."),
+      line(0, "Must be the water, Dave."),
+      line(1, "Copy. We'll look at it after the race."),
+    ],
+  },
+  {
+    id: "hold-position-short",
+    title: "Hold Position",
+    note: "6-line cut, 3 voices",
+    cast: ["Felix", "Harrison", "Sam"],
+    lines: () => [
+      line(0, "Sorry Harrison! The door was open!"),
+      line(1, "That door was my racing line!"),
+      line(2, "Team orders. Hold position."),
+      line(0, "Which position?"),
+      line(1, "The one where he's behind me!"),
+      line(2, "Next year, I'm joining a one-car team.", "sighs"),
+    ],
+  },
+  {
     id: "water-works",
     title: "Water Works",
-    note: "team radio, wet race",
+    note: "10-line version",
     cast: ["Matteo", "Dave"],
     lines: () => [
       line(0, "Dave, there is water in the car."),
@@ -43,7 +71,7 @@ export const PRESETS = [
   {
     id: "hold-position",
     title: "Hold Position",
-    note: "3 voices, team orders",
+    note: "10-line version, 3 voices",
     cast: ["Sam", "Felix", "Harrison"],
     lines: () => [
       line(0, "Okay boys, race clean today. Like a family."),
