@@ -507,13 +507,13 @@ export default function Studio() {
 
       <section className="studio-intro" aria-label="About Drama Studio">
         <h1>Turn a script into a conversation. Rewrite it. Hear the difference.</h1>
-        <p>Choose a script, edit the dialogue and delivery, then generate a new take. Voices run locally on Lennox’s MacBook using our custom C++/MLX inference implementation integrated with SGLang-Omni.</p>
+        <p>Voices run locally on Lennox’s MacBook using our custom C++/MLX inference implementation integrated with SGLang-Omni.</p>
         <p className="intro-beta"><strong>Beta:</strong> Generated voices may contain long silences due to an inference issue. We plan to fix this before opening a PR for SGLang-Omni.</p>
       </section>
 
       <main className="layout">
         <section className="script-pane" aria-label="Script">
-          <p className="generation-guidance">We recommend two short lines for live generation. Longer conversations may contain silence or stop early due to bugs in our inference code.</p>
+          <p className="generation-guidance">We recommend two short lines for live generation.</p>
           <div className="scene-head">
             <input
               className="scene-title"
