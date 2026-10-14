@@ -222,7 +222,7 @@ export default function Studio() {
     const blob = encodeWav(live.chunks, live.sampleRate);
     const number = ++takeCounter.current;
     const take = {
-      id: newId(), number, label: `Lap ${number}`, url: URL.createObjectURL(blob), blob,
+      id: newId(), number, label: `Conversation ${number}`, url: URL.createObjectURL(blob), blob,
       duration: live.received, backend: live.backend, firstAudioMs: live.firstAudioMs, renderMs,
       truncated: live.truncated, peaks: Float32Array.from(live.peaks), key: live.key,
       cast: live.snapshot.cast.map((c) => c.name), lineCount: lines.length,
@@ -432,7 +432,7 @@ export default function Studio() {
     }));
     setNotice({
       tone: written.warnings.length ? "warn" : "ok",
-      text: `Scene written by ${written.model}. Edit anything, then Perform.${written.warnings.length ? " " + written.warnings.join(" ") : ""}`,
+      text: `Scene written by ${written.model}. Edit the script, then click Generate conversation.${written.warnings.length ? " " + written.warnings.join(" ") : ""}`,
     });
   };
   const importScript = (text) => {
@@ -466,7 +466,6 @@ export default function Studio() {
       <header className="topbar">
         <div className="brand">
           <span className="wordmark">Drama Studio</span>
-          <span className="tagline">From script to voice, flat out.</span>
         </div>
         <div className="topbar-right">
           <ServerBadge health={health} backend={backend} onClick={() => setSettingsOpen((o) => !o)} />
@@ -594,7 +593,7 @@ export default function Studio() {
                 <div className="stage-empty">
                   <p>The voice server isn't reachable from this page.</p>
                   <button type="button" className="ghost-button" onClick={loadRecordedTake}>
-                    <PlayIcon /> Hear a recorded take
+                    <PlayIcon /> Play sample conversation
                   </button>
                 </div>
               )}
@@ -609,7 +608,7 @@ export default function Studio() {
           <div className="controls">
             {generating ? (
               <button type="button" className="perform is-stop" onClick={stop}>
-                <StopIcon /> Stop
+                <StopIcon /> Cancel generation
               </button>
             ) : (
               <button
@@ -617,23 +616,23 @@ export default function Studio() {
                 className="perform"
                 onClick={perform}
                 disabled={problems.length > 0}
-                title="Perform the scene (⌘ Enter)"
+                title="Generate and play a new conversation (⌘ Enter)"
               >
-                <PlayIcon /> {takes.some((t) => !t.recorded) ? "Run another lap" : "Perform scene"}
+                <PlayIcon /> Generate conversation
               </button>
             )}
             {nowPlaying === "stream" && !generating && (
-              <button type="button" className="transport" onClick={stop}><StopIcon /> Stop</button>
+              <button type="button" className="transport" onClick={stop}><StopIcon /> Stop playback</button>
             )}
             {selectedTake && !generating && nowPlaying !== "stream" && (
-              <button type="button" className="transport" onClick={() => toggleTake(selectedTake)} aria-label={nowPlaying === selectedTake.id ? "Pause" : `Play ${selectedTake.label}`}>
+              <button type="button" className="transport" onClick={() => toggleTake(selectedTake)} aria-label={nowPlaying === selectedTake.id ? "Pause conversation" : `Play ${selectedTake.label}`}>
                 {nowPlaying === selectedTake.id ? <PauseIcon /> : <PlayIcon />}
-                {nowPlaying === selectedTake.id ? "Pause" : "Replay"}
+                {nowPlaying === selectedTake.id ? "Pause conversation" : "Play conversation"}
               </button>
             )}
             {selectedTake && !generating && (
               <a className="transport" href={selectedTake.url} download={downloadName(scene.title, selectedTake)}>
-                <DownloadIcon /> Download
+                <DownloadIcon /> Download audio
               </a>
             )}
           </div>
@@ -648,11 +647,11 @@ export default function Studio() {
 
           {takes.length > 0 && (
             <div className="takes">
-              <h2 className="pane-label">Laps</h2>
+              <h2 className="pane-label">Generated conversations</h2>
               <ol>
                 {takes.map((take) => (
                   <li key={take.id} className={`take ${take.id === selectedId ? "is-selected" : ""} ${take.id === fastestId && takes.length > 1 ? "is-fastest" : ""}`}>
-                    <span className="take-pos">{take.recorded ? "R" : `L${take.number}`}</span>
+                    <span className="take-pos">{take.recorded ? "R" : take.number}</span>
                     <button type="button" className="take-play" onClick={() => toggleTake(take)} aria-label={nowPlaying === take.id ? `Pause ${take.label}` : `Play ${take.label}`}>
                       {nowPlaying === take.id ? <PauseIcon /> : <PlayIcon />}
                     </button>
@@ -720,38 +719,38 @@ function pushPeaks(live, samples, step) {
 function statusLine({ run, health, problems, apiUrl, selectedTake, editedSince }) {
   switch (run.phase) {
     case "connecting":
-      return { tone: "live", text: run.waiting ? "Waiting for the server to finish the previous take…" : "On the grid. Waiting for the first audio…" };
+      return { tone: "live", text: run.waiting ? "Waiting for the previous generation to finish…" : "Generating conversation. Waiting for the first audio…" };
     case "streaming":
       return {
         tone: "live",
-        text: `Lights out. First audio after ${fmtLatency(run.firstAudioMs)}, ${fmtSec(run.received)} received so far.`,
+        text: `Generating and playing. First audio after ${fmtLatency(run.firstAudioMs)}, ${fmtSec(run.received)} received so far.`,
       };
     case "cancelled":
-      return { tone: "quiet", text: "Stopped. Nothing was saved from that take." };
+      return { tone: "quiet", text: "Generation cancelled. No audio was saved." };
     case "error":
       return { tone: "error", text: run.message };
     case "done":
-      if (editedSince) return { tone: "quiet", text: `${selectedTake.label} is from an earlier version of the script. Run another lap to hear your edits.` };
+      if (editedSince) return { tone: "quiet", text: `${selectedTake.label} is from an earlier version of the script. Click Generate conversation to hear your edits.` };
       return {
         tone: run.truncated ? "warn" : "ok",
         text: run.truncated
           ? `Finished, but a segment hit the model's length limit and may be cut short. Try shorter lines.`
-          : `Chequered flag: ${fmtSec(run.duration)} of audio, rendered in ${fmtSec(run.renderMs / 1000)}.`,
+          : `Generated: ${fmtSec(run.duration)} of audio, rendered in ${fmtSec(run.renderMs / 1000)}.`,
       };
     default:
       break;
   }
   if (problems.length) return { tone: "warn", text: problems[0] };
-  if (editedSince) return { tone: "quiet", text: `${selectedTake.label} is from an earlier version of the script. Run another lap to hear your edits.` };
+  if (editedSince) return { tone: "quiet", text: `${selectedTake.label} is from an earlier version of the script. Click Generate conversation to hear your edits.` };
   if (selectedTake?.recorded) return { tone: "quiet", text: "This recording was made earlier with Drama3 on MLX from a Mandarin sample script, so it won't match the script on screen." };
   if (health.status === "offline") return { tone: "error", text: `Can't reach the voice server at ${apiUrl}. Start it, or change the address in Server settings.` };
   if (health.status === "checking") return { tone: "quiet", text: "Looking for the voice server…" };
-  return { tone: "quiet", text: "Ready. Press Perform scene or ⌘ Enter." };
+  return { tone: "quiet", text: "Ready. Click Generate conversation or press ⌘ Enter to generate and play audio." };
 }
 
 function downloadName(title, take) {
   const slug = (title || "scene").trim().replace(/[\\/:*?"<>|\s]+/g, "-").slice(0, 40) || "scene";
-  return `${slug}-${take.recorded ? "recorded" : `lap-${take.number}`}.wav`;
+  return `${slug}-${take.recorded ? "recorded" : `conversation-${take.number}`}.wav`;
 }
 
 function ServerBadge({ health, backend, onClick }) {
