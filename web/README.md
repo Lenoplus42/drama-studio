@@ -70,3 +70,26 @@ Without a key, the dialog explains how to set one up and the rest of the app wor
 - `lib/audio.js` — WAV parse/encode, peak envelope, gapless stream player
 - `lib/script.js` — sample scenes, validation, request shaping, paste-a-script parser
 - `app/` — Next.js layout, page and global styles
+
+## Live integration handoff (MLX backend ↔ web)
+
+Status at handoff: the web UI is tested only against the mock protocol (85 chunks / 27.07 s, cancel, 409 retry, download byte-identical). It has not yet been run against the real MLX server.
+
+1. **Start the real server** (on the Mac with the model):
+   ```bash
+   export DRAMA_BACKEND=mlx
+   export DRAMA_MODEL_PATH=/path/to/drama3-3bit
+   # Add every origin the page is served from. localhost:3000 is the default.
+   export DRAMA_ALLOWED_ORIGINS=http://localhost:3000,http://127.0.0.1:3000
+   python -m uvicorn server.app:app --port 8765            # same machine as the page
+   # page on another laptop: add --host 0.0.0.0 and that page's origin, e.g. http://<laptop-ip>:3000
+   ```
+2. **Protocol check:** `node scripts/check-api.mjs http://127.0.0.1:8765` must pass.
+3. **Start the web app:** `cd web && npm install && npm run dev` → http://localhost:3000. For a server on another machine, open `http://localhost:3000/?api=http://<server-ip>:8765` (or use the gear icon).
+4. **Verify in the UI:** the badge reads "Live · Drama3 on MLX" and new laps are tagged Live. The start lights should go out when the first audio arrives, and the First audio, Audio and Speed readouts should fill in. Download a lap, play the WAV, and check that it isn't truncated.
+5. **Things to check against the real model:**
+   - English quality. The default preset ("Box this lap") is English; Drama3 is only verified on Mandarin. If English is weak, change the default order in `lib/script.js` `PRESETS`.
+   - Streaming smoothness. If generation is slower than realtime, you will hear gaps. Tune `lead` / `rebuffer` in `lib/audio.js` `StreamPlayer` (currently 0.12 s / 0.3 s), or buffer more before starting.
+   - `truncated: true` shows a "Cut short" tag. If it appears often, shorten lines or raise `max_tokens` on the server.
+   - More than 2 voices: change `Line.speaker: Literal[0, 1]` on the server and `MAX_CAST` in `lib/script.js` together.
+6. **Do not change the HTTP/NDJSON protocol** without updating `web/api.js` and re-running `scripts/check-api.mjs` against both backends.
