@@ -17,7 +17,7 @@ export default function RootLayout({ children }) {
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link
           rel="stylesheet"
-          href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@1,600;1,700;1,800&family=Titillium+Web:ital,wght@0,400;0,600;0,700;1,400&display=swap"
+          href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@600;700;800;900&family=Titillium+Web:ital,wght@0,400;0,600;0,700;1,400&display=swap"
         />
       </head>
       <body>{children}</body>

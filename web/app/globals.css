@@ -3,31 +3,39 @@
    timing-tower laps. Inspired by F1 liveries; no team marks are reproduced. */
 
 :root {
-  --carbon: #14161b;
-  --carbon-raised: #1c1f26;
-  --carbon-sunk: #0d0e12;
-  --rule: #2c3039;
-  --white: #f2f4f5;
-  --silver: #a3a9b3;
-  --faint: #69707c;
-  --teal: #00d2be;
-  --sky: #27c6f2;
-  --magenta: #e5007e;
-  --signal: #e10600;
-  --sponsor: #9b0025;
-  --gold: #b8975a;
+  --bg: #13162a;
+  --band-1: #1b2038;
+  --band-2: #29305a;
+  --carbon: #13162a;
+  --carbon-raised: #1c2138;
+  --carbon-sunk: #0e1122;
+  --rule: #2c3356;
+  --white: #f4f5f8;
+  --silver: #a9afc4;
+  --faint: #6b7392;
+  --teal: #00d2be;          /* key buttons only */
+  --gold: #e8b84a;
+  --gold-deep: #b8862e;
+  --red: #ff2a3c;
+  --red-deep: #c8102e;
+  --blue: #2f6bff;
+  --blue-bright: #5b8dff;
+  --signal: #ff2a3c;
+  --sponsor: #c8102e;
   --purple: #b26bff;
   --amber: #ffb020;
-  --role-0: var(--sky);
-  --role-1: var(--magenta);
+  --sky: var(--blue-bright);
+  --magenta: var(--red);
+  --role-0: var(--blue-bright);
+  --role-1: #ff4757;
   --role-2: #9be15d;
-  --role-3: var(--amber);
+  --role-3: var(--gold);
 
   --ui: "Titillium Web", -apple-system, "Segoe UI", system-ui, sans-serif;
-  --race: "Barlow Condensed", "Titillium Web", "Arial Narrow", sans-serif;
+  --race: "Saira Condensed", "Titillium Web", "Arial Narrow", sans-serif;
 
-  --hatch: repeating-linear-gradient(135deg, rgba(255, 255, 255, 0.022) 0 2px, transparent 2px 6px);
-  --cut: 10px;
+  --hatch: repeating-linear-gradient(135deg, rgba(255, 255, 255, 0.02) 0 2px, transparent 2px 6px);
+  --cut: 12px;
 
   color-scheme: dark;
 }
@@ -729,3 +737,177 @@ code {
   .stage.phase-connecting .light i { animation-delay: 0s; }
   .stage.phase-streaming .start-lights, .badge-pending .dot { animation: none; }
 }
+
+
+/* ================= v2: bolder livery ================= */
+
+body { background: var(--bg); border-top: 8px solid var(--red-deep); }
+body::before { height: 3px; background: linear-gradient(90deg, var(--gold) 0 33%, var(--white) 33% 66%, var(--blue) 66%); }
+
+.backdrop-livery { position: fixed; inset: 0; width: 100vw; height: 100vh; z-index: -1; pointer-events: none; }
+.backdrop-livery .shards { opacity: 0.9; }
+.studio { position: relative; z-index: 0; }
+
+/* Bold display face for names, buttons, labels */
+.wordmark, .scene-title, .pane-label, .perform, .who-option, .cast-member input, .player,
+.take-time, .take-pos, .telemetry dd, .line-number, .paste h2, .cast-mark, .player b {
+  font-family: var(--race);
+  font-style: normal;
+}
+.wordmark {
+  font-weight: 900;
+  font-size: 2.25rem;
+  letter-spacing: 0.02em;
+  transform: skewX(-8deg);
+}
+.wordmark::after { content: none; }
+.tri { display: inline-flex; gap: 5px; height: 26px; }
+.tri i {
+  width: 14px;
+  height: 100%;
+  clip-path: polygon(45% 0, 100% 0, 55% 100%, 0 100%);
+}
+.tri i:nth-child(1) { background: var(--gold); }
+.tri i:nth-child(2) { background: var(--red); }
+.tri i:nth-child(3) { background: var(--blue); }
+.tagline { display: none; }
+
+.topbar { border-bottom: 2px solid var(--rule); }
+
+/* Script sits on a solid panel so the livery never fights the text */
+.script-pane {
+  padding: 22px 24px 20px;
+  border: 1px solid var(--rule);
+  border-radius: 8px;
+  background: rgba(19, 22, 42, 0.92);
+  box-shadow: 0 30px 60px -30px rgba(0, 0, 0, 0.7);
+}
+.scene-title { font-weight: 900; font-size: 2.6rem; letter-spacing: 0.01em; text-transform: uppercase; }
+.scene-title:hover, .scene-title:focus { border-bottom-color: var(--gold); }
+.pane-label { font-weight: 800; font-size: 0.95rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--gold); }
+
+.cast { background: var(--carbon-sunk); border-color: var(--rule); }
+.cast-mark { font-weight: 900; }
+.cast-member input { font-weight: 800; font-size: 1.25rem; letter-spacing: 0.02em; text-transform: uppercase; }
+.who-option { font-weight: 800; font-size: 0.95rem; letter-spacing: 0.04em; text-transform: uppercase; }
+.who-option.is-on { color: #0b0d18; }
+.line-number { font-weight: 800; font-size: 1.1rem; }
+.line::before { width: 4px; }
+.direction-option.is-on { color: var(--gold); border-color: rgba(232, 184, 74, 0.6); }
+.add-line:hover:not(:disabled) { color: var(--gold); }
+
+.ghost-button, .transport, .server-badge { font-family: var(--race); font-weight: 700; font-size: 0.95rem; letter-spacing: 0.04em; text-transform: uppercase; }
+.ghost-button.is-accent { border-color: rgba(232, 184, 74, 0.7); color: var(--gold); }
+.ghost-button.is-accent:hover { background: rgba(232, 184, 74, 0.08); }
+.solid-button { font-family: var(--race); font-weight: 800; font-size: 1rem; letter-spacing: 0.04em; text-transform: uppercase; }
+
+.badge-live { border-color: rgba(232, 184, 74, 0.6); }
+.badge-live .dot { background: var(--gold); box-shadow: 0 0 0 4px rgba(232, 184, 74, 0.2); }
+
+/* Stage */
+.cockpit {
+  background:
+    radial-gradient(60% 70% at 50% -10%, rgba(255, 244, 214, calc(0.06 + var(--level) * 0.22)), transparent 70%),
+    linear-gradient(180deg, rgba(10, 12, 24, 0) 55%, rgba(10, 12, 24, 0.85)),
+    var(--hatch),
+    #0f1222;
+  box-shadow:
+    inset 0 0 0 2px var(--gold),
+    inset 0 0 0 7px #0f1222,
+    inset 0 0 0 8.5px rgba(232, 184, 74, 0.7),
+    0 30px 60px -24px rgba(0, 0, 0, 0.8);
+}
+.swoosh-a {
+  stroke: var(--red);
+  stroke-width: 16;
+  opacity: calc(0.7 + var(--level) * 0.3);
+  filter: drop-shadow(0 0 calc(var(--level) * 16px) rgba(255, 42, 60, 0.9));
+}
+.swoosh-b { stroke: var(--gold); stroke-width: 4; }
+.wave { --wave-played: #f4c95d; --wave-ahead: rgba(244, 245, 248, 0.34); }
+.player { font-weight: 800; font-size: 1.1rem; letter-spacing: 0.04em; text-transform: uppercase; }
+.player b { font-weight: 900; }
+
+.telemetry div { background: rgba(28, 33, 56, 0.95); border-top-color: var(--gold); }
+.telemetry div:nth-child(2) { border-top-color: var(--blue); }
+.telemetry div:nth-child(3) { border-top-color: var(--red); }
+.telemetry dt { font-family: var(--race); font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; font-size: 0.75rem; }
+.telemetry dd { font-weight: 800; font-size: 2rem; }
+
+/* Key button keeps the teal */
+.perform { font-weight: 900; font-size: 1.4rem; letter-spacing: 0.04em; text-transform: uppercase; }
+.perform.is-stop { background: var(--red); }
+
+.status-live, .status-ok { color: var(--gold); }
+
+.take { background: rgba(28, 33, 56, 0.95); }
+.take.is-selected { box-shadow: inset 4px 0 0 var(--gold); background: #232946; }
+.take.is-selected .take-play { border-color: var(--gold); color: var(--gold); }
+.take-pos { font-weight: 900; font-size: 1.1rem; }
+.take-time { font-weight: 800; font-size: 1.45rem; }
+.tag-mlx { color: var(--gold); border-color: rgba(232, 184, 74, 0.5); }
+.settings, .paste { border-top-color: var(--gold); }
+.paste h2 { font-weight: 900; text-transform: uppercase; letter-spacing: 0.02em; }
+:focus-visible { outline-color: var(--gold); }
+
+@media (max-width: 560px) {
+  .wordmark { font-size: 1.55rem; }
+  .tri { height: 18px; }
+  .tri i { width: 10px; }
+  .script-pane { padding: 16px 14px; }
+  .scene-title { font-size: 1.9rem; }
+}
+
+.stage-pane {
+  padding: 18px;
+  border: 1px solid var(--rule);
+  border-radius: 8px;
+  background: rgba(19, 22, 42, 0.94);
+  box-shadow: 0 30px 60px -30px rgba(0, 0, 0, 0.7);
+}
+@media (max-width: 560px) { .stage-pane { padding: 12px; } }
+@media (max-width: 560px) {
+  .brand { flex-wrap: nowrap; gap: 8px; }
+  .wordmark { font-size: 1.3rem; }
+  .tri { display: none; }
+  .server-badge { font-size: 0.75rem; padding: 4px 8px; letter-spacing: 0.02em; }
+  .telemetry dt { font-size: 0.65rem; letter-spacing: 0.04em; }
+}
+
+
+/* ================= v3: muted carbon backdrop ================= */
+
+:root {
+  --bg: #0c0c0e;
+  --band-1: rgba(255, 255, 255, 0.025);
+  --band-2: rgba(255, 255, 255, 0.055);
+  --shard-1: rgba(255, 255, 255, 0.07);
+  --shard-2: rgba(0, 0, 0, 0.55);
+  --shard-3: rgba(255, 255, 255, 0.13);
+  --carbon-raised: #1b1b1f;
+  --carbon-sunk: #0f0f12;
+  --rule: #2f2f36;
+  --silver: #a8a8b2;
+  --faint: #6e6e78;
+  --carbon-weave:
+    linear-gradient(27deg, #101012 5px, transparent 5px) 0 5px,
+    linear-gradient(207deg, #101012 5px, transparent 5px) 10px 0,
+    linear-gradient(27deg, #19191c 5px, transparent 5px) 0 10px,
+    linear-gradient(207deg, #19191c 5px, transparent 5px) 10px 5px,
+    linear-gradient(90deg, #141416 10px, transparent 10px),
+    linear-gradient(#161618 25%, #131315 25%, #131315 50%, transparent 50%, transparent 75%, #1c1c1f 75%, #1c1c1f);
+}
+body { background: var(--carbon-weave), var(--bg); background-size: 20px 20px; background-color: var(--bg); border-top-color: #2a2a2e; }
+body::before { background: linear-gradient(90deg, #3a3a40, #6a6a72 50%, #3a3a40); }
+.backdrop-livery .shards { opacity: 1; }
+.script-pane, .stage-pane { background: rgba(14, 14, 17, 0.93); }
+.cockpit {
+  background:
+    radial-gradient(60% 70% at 50% -10%, rgba(255, 244, 214, calc(0.06 + var(--level) * 0.22)), transparent 70%),
+    linear-gradient(180deg, rgba(8, 8, 10, 0) 50%, rgba(8, 8, 10, 0.85)),
+    var(--carbon-weave);
+  background-size: 100% 100%, 100% 100%, 14px 14px, 14px 14px, 14px 14px, 14px 14px, 14px 14px, 14px 14px;
+  background-color: #111113;
+}
+.telemetry div, .take { background: rgba(27, 27, 31, 0.96); }
+.take.is-selected { background: #24242a; }
