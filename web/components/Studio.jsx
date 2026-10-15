@@ -513,7 +513,7 @@ export default function Studio() {
 
       <main className="layout">
         <section className="script-pane" aria-label="Script">
-          <p className="generation-guidance">We recommend two short lines for live generation.</p>
+          <p className="generation-guidance">For best results, keep live generations to two short lines. We’re fixing long silences as part of our ongoing Drama3 MLX integration with SGLang-Omni.</p>
           <div className="scene-head">
             <input
               className="scene-title"
