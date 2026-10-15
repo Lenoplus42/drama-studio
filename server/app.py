@@ -9,6 +9,7 @@ from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import Literal
 
+import anyio
 import httpx
 
 from fastapi import FastAPI, HTTPException
@@ -150,6 +151,7 @@ def event(value: dict) -> str:
 async def lifespan(app: FastAPI):
     app.state.pool = ThreadPoolExecutor(max_workers=1)
     app.state.busy = False
+    app.state.last_outcome = None
     loop = asyncio.get_running_loop()
     app.state.backend = await loop.run_in_executor(
         app.state.pool, Backend, os.getenv("DRAMA_BACKEND", "mock")
@@ -168,7 +170,8 @@ app.add_middleware(
 
 @app.get("/health")
 async def health():
-    return {"ready": True, "backend": app.state.backend.mode, "busy": app.state.busy}
+    return {"ready": True, "backend": app.state.backend.mode, "busy": app.state.busy,
+            "last_outcome": app.state.last_outcome}
 
 
 @app.post("/v1/scene/audio")
@@ -176,6 +179,7 @@ async def generate(scene: Scene):
     if app.state.busy:
         raise HTTPException(status_code=409, detail="A scene is already generating")
     app.state.busy = True
+    app.state.last_outcome = None
     backend = app.state.backend
     chunks = audio_chunks(backend, scene)
 
@@ -184,6 +188,7 @@ async def generate(scene: Scene):
         samples = 0
         truncated = False
         pending = None
+        outcome = "interrupted"
         try:
             yield event({"type": "start", "version": 1, "backend": backend.mode,
                          "sample_rate": backend.rate, "channels": 1, "format": "wav-pcm16"})
@@ -209,19 +214,24 @@ async def generate(scene: Scene):
                 samples += len(pcm) // 2
                 if backend.mode == "mock":
                     await asyncio.sleep(0.05)
+            outcome = "completed"
             yield event({"type": "done", "chunks": count,
                          "duration_seconds": samples / backend.rate, "truncated": truncated})
         except Exception:
             import logging
+            outcome = "failed"
             logging.exception("Scene generation failed")
             yield event({"type": "error", "message": "Generation failed; inspect server logs"})
         finally:
-            if pending is not None:
-                pending.cancel()
-                await asyncio.gather(pending, return_exceptions=True)
-            cleanup = asyncio.create_task(chunks.aclose())
-            cleanup.add_done_callback(lambda future: setattr(app.state, "busy", False))
-            await asyncio.shield(cleanup)
+            with anyio.CancelScope(shield=True):
+                try:
+                    if pending is not None:
+                        pending.cancel()
+                        await asyncio.gather(pending, return_exceptions=True)
+                    await chunks.aclose()
+                finally:
+                    app.state.last_outcome = outcome
+                    app.state.busy = False
 
     return StreamingResponse(stream(), media_type="application/x-ndjson",
                              headers={"Cache-Control": "no-store, no-transform", "X-Accel-Buffering": "no"})

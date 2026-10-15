@@ -137,7 +137,7 @@ export default function Studio() {
       try {
         const response = await fetch(`${apiUrl.replace(/\/$/, "")}/health`, { cache: "no-store", signal: controller.signal });
         const body = await response.json();
-        if (!cancelled) setHealth({ status: body.ready ? "online" : "starting", backend: body.backend, busy: !!body.busy });
+        if (!cancelled) setHealth({ status: body.ready ? "online" : "starting", backend: body.backend, busy: !!body.busy, lastOutcome: body.last_outcome });
       } catch {
         if (!cancelled) setHealth({ status: "offline" });
       } finally {
@@ -633,6 +633,10 @@ export default function Studio() {
             </dl>
           </div>
 
+          {health.status === "online" && !generating && (
+            health.busy ? <p className="fine-print" role="status">Another conversation is generating on the shared MacBook. Please wait.</p>
+              : ["interrupted", "failed"].includes(health.lastOutcome) && <p className="fine-print" role="status">The previous generation did not finish. The server is ready for another try.</p>
+          )}
           <div className="controls">
             {generating ? (
               <button type="button" className="perform is-stop" onClick={stop}>
@@ -803,7 +807,7 @@ function ServerBadge({ health, backend, onClick }) {
   else if (health.status === "online") {
     if (backend === "mock") { tone = "mock"; text = "Mock server"; }
     else { tone = "live"; text = "Live · Drama3 On Lennox's Macbook MLX"; }
-    if (health.busy) text += " · busy";
+    text += health.busy ? " · Generating" : " · Ready";
   }
   return (
     <button type="button" className={`server-badge badge-${tone}`} onClick={onClick}>
