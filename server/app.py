@@ -2,10 +2,13 @@ import asyncio
 import base64
 import io
 import json
+import logging
 import os
 import wave
 from concurrent.futures import ThreadPoolExecutor
 from contextlib import asynccontextmanager
+from datetime import datetime, timezone
+from uuid import uuid4
 from pathlib import Path
 from typing import Literal
 
@@ -189,6 +192,9 @@ async def generate(scene: Scene):
         truncated = False
         pending = None
         outcome = "interrupted"
+        recorded_pcm = bytearray()
+        started_at = datetime.now(timezone.utc)
+        recording_id = started_at.strftime("%Y%m%dT%H%M%SZ") + "-" + uuid4().hex[:8]
         try:
             yield event({"type": "start", "version": 1, "backend": backend.mode,
                          "sample_rate": backend.rate, "channels": 1, "format": "wav-pcm16"})
@@ -207,6 +213,7 @@ async def generate(scene: Scene):
                 truncated |= capped
                 if not pcm:
                     continue
+                recorded_pcm.extend(pcm)
                 yield event({"type": "audio", "index": count,
                              "audio_base64": base64.b64encode(wav_bytes(pcm, backend.rate)).decode(),
                              "duration_seconds": len(pcm) / 2 / backend.rate})
@@ -218,7 +225,6 @@ async def generate(scene: Scene):
             yield event({"type": "done", "chunks": count,
                          "duration_seconds": samples / backend.rate, "truncated": truncated})
         except Exception:
-            import logging
             outcome = "failed"
             logging.exception("Scene generation failed")
             yield event({"type": "error", "message": "Generation failed; inspect server logs"})
@@ -230,8 +236,26 @@ async def generate(scene: Scene):
                         await asyncio.gather(pending, return_exceptions=True)
                     await chunks.aclose()
                 finally:
-                    app.state.last_outcome = outcome
-                    app.state.busy = False
+                    try:
+                        directory = ROOT / "outputs" / "takes"
+                        directory.mkdir(parents=True, exist_ok=True)
+                        audio_name = recording_id + ".wav" if recorded_pcm else None
+                        if audio_name:
+                            (directory / audio_name).write_bytes(wav_bytes(bytes(recorded_pcm), backend.rate))
+                        (directory / (recording_id + ".json")).write_text(json.dumps({
+                            "id": recording_id, "started_at": started_at.isoformat(),
+                            "outcome": outcome, "truncated": truncated,
+                            "backend": "omni" if backend.omni_url else backend.mode,
+                            "scene": scene.model_dump(), "audio_file": audio_name,
+                            "duration_seconds": len(recorded_pcm) / 2 / backend.rate,
+                            "seed": DEMO_SEEDS.get(render_scene(scene)) if backend.omni_url else os.getenv("DRAMA_SEED"),
+                        }, ensure_ascii=False, indent=2))
+                        logging.info("Saved generation record %s (%s)", recording_id, outcome)
+                    except Exception:
+                        logging.exception("Could not save generation record %s", recording_id)
+                    finally:
+                        app.state.last_outcome = outcome
+                        app.state.busy = False
 
     return StreamingResponse(stream(), media_type="application/x-ndjson",
                              headers={"Cache-Control": "no-store, no-transform", "X-Accel-Buffering": "no"})

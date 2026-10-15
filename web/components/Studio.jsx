@@ -637,6 +637,7 @@ export default function Studio() {
             health.busy ? <p className="fine-print" role="status">Another conversation is generating on the shared MacBook. Please wait.</p>
               : ["interrupted", "failed"].includes(health.lastOutcome) && <p className="fine-print" role="status">The previous generation did not finish. The server is ready for another try.</p>
           )}
+          <p className="fine-print">Demo scripts and generated audio are saved on the host MacBook for debugging. They are not shared with other visitors.</p>
           <div className="controls">
             {generating ? (
               <button type="button" className="perform is-stop" onClick={stop}>
